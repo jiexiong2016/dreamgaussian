@@ -15,11 +15,11 @@ from omegaconf import OmegaConf
 
 class DreamGaussianModel():
 
-    def __init__(self):
+    def __init__(self, config_file="./configs/dream_gsplat.yaml"):
         assert torch.cuda.is_available()
         self.device = torch.device("cuda")
 
-        self.dg_opt = OmegaConf.load("./configs/dream_gsplat.yaml")
+        self.dg_opt = OmegaConf.load(config_file)
         self.train_steps = 500
         self.refine_steps = 50
         self.guidance = Zero123(self.device)
