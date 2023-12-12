@@ -1,37 +1,22 @@
 tqdm
-rich
 ninja
 numpy
-pandas
 scipy
 scikit-learn
-matplotlib
 opencv-python
-imageio
-imageio-ffmpeg
 omegaconf
 
 torch
+torchvision
 einops
-plyfile
-pygltflib
 
-# for gui
-dearpygui
-
-# for stable-diffusion
-huggingface_hub
 diffusers
 accelerate
 transformers
 
-# for dmtet and mesh export
+plyfile
+pygltflib
 xatlas
 trimesh
 PyMCubes
 pymeshlab
-
-rembg[gpu,cli]
-
-# gradio demo
-gradio

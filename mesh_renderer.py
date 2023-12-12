@@ -1,7 +1,4 @@
-import os
 import math
-import cv2
-import trimesh
 import numpy as np
 
 import torch
@@ -40,23 +37,21 @@ def make_divisible(x, m=8):
     return int(math.ceil(x / m) * m)
 
 class Renderer(nn.Module):
-    def __init__(self, opt):
+    def __init__(self, opt, mesh=None):
         
         super().__init__()
 
         self.opt = opt
 
-        self.mesh = Mesh.load(self.opt.mesh, resize=False)
+        if mesh is None:
+            self.mesh = Mesh.load(self.opt.mesh, resize=False)
+        elif isinstance(mesh, Mesh):
+            self.mesh = mesh
+        self.glctx = dr.RasterizeGLContext()
 
-        if not self.opt.force_cuda_rast and (not self.opt.gui or os.name == 'nt'):
-            self.glctx = dr.RasterizeGLContext()
-        else:
-            self.glctx = dr.RasterizeCudaContext()
-        
         # extract trainable parameters
         self.v_offsets = nn.Parameter(torch.zeros_like(self.mesh.v))
         self.raw_albedo = nn.Parameter(trunc_rev_sigmoid(self.mesh.albedo))
-
 
     def get_params(self):
 

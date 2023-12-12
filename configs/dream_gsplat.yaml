@@ -1,0 +1,31 @@
+# gsplat options
+num_pts: 5000
+sh_degree: 0
+position_lr_init: 0.001
+position_lr_final: 0.00002
+position_lr_delay_mult: 0.02
+position_lr_max_steps: 300
+feature_lr: 0.01
+opacity_lr: 0.05
+scaling_lr: 0.005
+rotation_lr: 0.005
+percent_dense: 0.01
+density_start_iter: 0
+density_end_iter: 3000
+densification_interval: 50
+opacity_reset_interval: 700
+densify_grad_threshold: 0.01
+
+# dg options
+ref_size: 256
+fovy: 49.1
+elevation: 0
+radius: 2
+z_near: 0.01
+z_far: 100.0
+invert_bg_prob: 0.5
+
+### mesh options
+texture_lr: 0.2
+train_geo: False
+density_thresh: 1

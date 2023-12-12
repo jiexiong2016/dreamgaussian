@@ -61,6 +61,23 @@ def orbit_camera(elevation, azimuth, radius=1, is_degree=True, target=None, open
     T[:3, 3] = campos
     return T
 
+def perspective(fovy, W, H, near, far):
+    y = np.tan(fovy / 2)
+    aspect = W / H
+    return np.array(
+        [
+            [1 / (y * aspect), 0, 0, 0],
+            [0, -1 / y, 0, 0],
+            [
+                0,
+                0,
+                -(far + near) / (far - near),
+                -(2 * far * near) / (far - near),
+            ],
+            [0, 0, -1, 0],
+        ],
+        dtype=np.float32,
+    )
 
 class OrbitCamera:
     def __init__(self, W, H, r=2, fovy=60, near=0.01, far=100):

@@ -419,7 +419,18 @@ class Mesh:
             if tensor is not None:
                 setattr(self, name, tensor.to(device))
         return self
+
+    def pack(self):
+        if self.v.shape[0] != self.vt.shape[0]:
+            self.align_v_to_vt()
     
+        return {
+            "f": self.f.detach().cpu().numpy().astype(np.uint32),
+            "v": self.v.detach().cpu().numpy().astype(np.float32),
+            "vt": self.vt.detach().cpu().numpy().astype(np.float32),
+            "albedo": self.albedo.detach().cpu().numpy().astype(np.float32),
+        }
+
     def write(self, path):
         if path.endswith(".ply"):
             self.write_ply(path)

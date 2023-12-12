@@ -11,13 +11,10 @@ from diff_gaussian_rasterization import (
     GaussianRasterizationSettings,
     GaussianRasterizer,
 )
-from simple_knn._C import distCUDA2
 
 from sh_utils import eval_sh, SH2RGB, RGB2SH
 from mesh import Mesh
 from mesh_utils import decimate_mesh, clean_mesh
-
-import kiui
 
 def inverse_sigmoid(x):
     return torch.log(x/(1-x))
@@ -283,19 +280,15 @@ class GaussianModel:
                         w = gaussian_3d_coeff(g_pts[:, start:end].reshape(-1, 3), g_covs[:, start:end].reshape(-1, 6)).reshape(pts.shape[0], -1) # [M, l]
                         val += (mask_opas[:, start:end] * w).sum(-1)
                     
-                    # kiui.lo(val, mask_opas, w)
-                
                     occ[xi * split_size: xi * split_size + len(xs), 
                         yi * split_size: yi * split_size + len(ys), 
                         zi * split_size: zi * split_size + len(zs)] = val.reshape(len(xs), len(ys), len(zs)) 
-        
-        kiui.lo(occ, verbose=1)
-
         return occ
     
-    def extract_mesh(self, path, density_thresh=1, resolution=128, decimate_target=1e5):
-
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+    def extract_mesh(self, path=None, density_thresh=1, resolution=128, decimate_target=1e5):
+        
+        if path is not None:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
 
         occ = self.extract_fields(resolution).detach().cpu().numpy()
 
@@ -338,8 +331,14 @@ class GaussianModel:
 
         print("Number of points at initialisation : ", fused_point_cloud.shape[0])
 
-        dist2 = torch.clamp_min(distCUDA2(torch.from_numpy(np.asarray(pcd.points)).float().cuda()), 0.0000001)
-        scales = torch.log(torch.sqrt(dist2))[...,None].repeat(1, 3)
+        from sklearn.neighbors import NearestNeighbors
+        knn = NearestNeighbors(n_neighbors=4, algorithm="kd_tree", metric='euclidean').fit(
+            np.asarray(pcd.points)
+        )
+        values, _ = knn.kneighbors(pcd.points)
+        dist = torch.clamp_min(torch.from_numpy(np.asarray(values[:,1:].mean(axis=1))).float().cuda(), 0.0000001)
+        scales = torch.log(dist)[...,None].repeat(1, 3)
+
         rots = torch.zeros((fused_point_cloud.shape[0], 4), device="cuda")
         rots[:, 0] = 1
 

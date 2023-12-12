@@ -1,10 +1,4 @@
-from transformers import CLIPTextModel, CLIPTokenizer, logging
-from diffusers import (
-    AutoencoderKL,
-    UNet2DConditionModel,
-    DDIMScheduler,
-    StableDiffusionPipeline,
-)
+from diffusers import DDIMScheduler
 import torchvision.transforms.functional as TF
 
 import numpy as np
@@ -12,11 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import sys
-sys.path.append('./')
-
-from zero123 import Zero123Pipeline
-
+from guidance.zero123 import Zero123Pipeline
 
 class Zero123(nn.Module):
     def __init__(self, device, fp16=True, t_range=[0.02, 0.98]):
@@ -190,38 +180,3 @@ class Zero123(nn.Module):
 
         return latents
     
-    
-if __name__ == '__main__':
-    import cv2
-    import argparse
-    import numpy as np
-    import matplotlib.pyplot as plt
-    
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('input', type=str)
-    parser.add_argument('--polar', type=float, default=0, help='delta polar angle in [-90, 90]')
-    parser.add_argument('--azimuth', type=float, default=0, help='delta azimuth angle in [-180, 180]')
-    parser.add_argument('--radius', type=float, default=0, help='delta camera radius multiplier in [-0.5, 0.5]')
-
-    opt = parser.parse_args()
-
-    device = torch.device('cuda')
-
-    print(f'[INFO] loading image from {opt.input} ...')
-    image = cv2.imread(opt.input, cv2.IMREAD_UNCHANGED)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image = cv2.resize(image, (256, 256), interpolation=cv2.INTER_AREA)
-    image = image.astype(np.float32) / 255.0
-    image = torch.from_numpy(image).permute(2, 0, 1).unsqueeze(0).contiguous().to(device)
-
-    print(f'[INFO] loading model ...')
-    zero123 = Zero123(device)
-
-    print(f'[INFO] running model ...')
-    zero123.get_img_embeds(image)
-
-    while True:
-        outputs = zero123.refine(image, polar=[opt.polar], azimuth=[opt.azimuth], radius=[opt.radius], strength=0)
-        plt.imshow(outputs.float().cpu().numpy().transpose(0, 2, 3, 1)[0])
-        plt.show()
