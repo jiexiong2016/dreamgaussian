@@ -178,7 +178,7 @@ class DreamGaussianModel():
         render_resolution = 512
 
         import nvdiffrast.torch as dr
-        glctx = dr.RasterizeGLContext()
+        glctx = dr.RasterizeCudaContext()
 
         for ver, hor in zip(vers, hors):
             # render image

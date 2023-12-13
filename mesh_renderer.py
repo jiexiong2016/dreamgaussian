@@ -47,7 +47,7 @@ class Renderer(nn.Module):
             self.mesh = Mesh.load(self.opt.mesh, resize=False)
         elif isinstance(mesh, Mesh):
             self.mesh = mesh
-        self.glctx = dr.RasterizeGLContext()
+        self.glctx = dr.RasterizeCudaContext()
 
         # extract trainable parameters
         self.v_offsets = nn.Parameter(torch.zeros_like(self.mesh.v))
